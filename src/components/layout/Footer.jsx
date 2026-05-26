@@ -1,0 +1,51 @@
+import { Link } from 'react-router-dom'
+import { Zap, Github, Twitter } from 'lucide-react'
+
+export default function Footer() {
+  return (
+    <footer className="py-10 px-4" style={{ borderTop: '1px solid #21262D' }}>
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+
+          <Link to="/" className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-md flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, #388BFD, #58A6FF)' }}>
+              <Zap size={13} className="text-white fill-white" />
+            </div>
+            <span className="font-display font-bold text-base" style={{ color: '#E6EDF3' }}>
+              Spend<span style={{ color: '#58A6FF' }}>Lens</span>
+            </span>
+          </Link>
+
+          <p
+  className="font-body text-sm text-center tracking-wide flex items-center justify-center gap-2"
+  style={{ color: '#484F58' }}
+>
+  Engineered by{" "}
+  <span className="font-semibold text-white">
+    Apoorv Tripathi
+  </span>
+  ✦ Modern AI experiences with product-first thinking
+
+  <span className="animate-bounce text-pink-500 text-base">
+    💖
+  </span>
+</p>
+
+          <div className="flex items-center gap-4">
+            <a href="#" className="transition-colors" style={{ color: '#484F58' }}
+              onMouseEnter={e => e.target.style.color = '#58A6FF'}
+              onMouseLeave={e => e.target.style.color = '#484F58'}>
+              <Github size={17} />
+            </a>
+            <a href="#" className="transition-colors" style={{ color: '#484F58' }}
+              onMouseEnter={e => e.target.style.color = '#58A6FF'}
+              onMouseLeave={e => e.target.style.color = '#484F58'}>
+              <Twitter size={17} />
+            </a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  )
+}
