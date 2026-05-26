@@ -16,13 +16,25 @@ export default function Footer() {
               Spend<span style={{ color: '#58A6FF' }}>Lens</span>
             </span>
           </Link>
+          <p className="font-body text-sm text-center tracking-wide flex items-center justify-center gap-2 text-[#8B93A7]">
 
-          <p className="font-body text-sm text-center" style={{ color: '#484F58' }}>
-            Built for the Credex internship assignment · © {new Date().getFullYear()} SpendLens
-          </p>
+  <span>
+    Engineered by
+  </span>
 
+  <span className="font-semibold bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-300 bg-clip-text text-transparent">
+    Apoorv Tripathi
+  </span>
+
+  <span className="text-[#3B82F6]">✦</span>
+
+  <span className="text-[#9CA3AF]">
+    Modern AI experiences with product-first thinking
+  </span>
+
+</p>
           <div className="flex items-center gap-4">
-            <a href="#" className="transition-colors" style={{ color: '#484F58' }}
+            {/* <a href="#" className="transition-colors" style={{ color: '#484F58' }}
               onMouseEnter={e => e.target.style.color = '#58A6FF'}
               onMouseLeave={e => e.target.style.color = '#484F58'}>
               <Github size={17} />
@@ -31,7 +43,7 @@ export default function Footer() {
               onMouseEnter={e => e.target.style.color = '#58A6FF'}
               onMouseLeave={e => e.target.style.color = '#484F58'}>
               <Twitter size={17} />
-            </a>
+            </a> */}
           </div>
         </div>
       </div>
