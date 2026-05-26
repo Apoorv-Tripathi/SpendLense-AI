@@ -1,0 +1,235 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+  body {
+    @apply bg-ink text-ivory font-body;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(88,166,255,0.07) 0%, transparent 60%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M0 0h60v60H0z' fill='none'/%3E%3Cpath d='M0 0v60M60 0v60M0 0h60M0 60h60' stroke='%2358A6FF07' stroke-width='1'/%3E%3C/svg%3E");
+  }
+
+  ::selection { background: rgba(88,166,255,0.25); color: #A5D6FF; }
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: #0D1117; }
+  ::-webkit-scrollbar-thumb { background: #30363D; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #58A6FF; }
+}
+
+@layer components {
+
+  /* ── Buttons ─────────────────────────────────── */
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-6 py-3 rounded-xl font-display font-semibold text-sm text-white transition-all duration-200;
+    background: linear-gradient(135deg, #388BFD 0%, #58A6FF 60%, #7AC3FF 100%);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 0 0 1px rgba(88,166,255,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+    letter-spacing: 0.01em;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
+    transform: translateX(-100%);
+    transition: transform 0.4s ease;
+  }
+  .btn-primary:hover::before { transform: translateX(100%); }
+  .btn-primary:hover {
+    box-shadow: 0 6px 20px rgba(88,166,255,0.40), 0 0 0 1px rgba(88,166,255,0.4);
+    transform: translateY(-1px);
+  }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-outline {
+    @apply inline-flex items-center gap-2 px-6 py-3 rounded-xl font-display font-semibold text-sm transition-all duration-200;
+    color: #8B949E; border: 1px solid #30363D; background: transparent;
+  }
+  .btn-outline:hover { color: #E6EDF3; border-color: #58A6FF; background: rgba(88,166,255,0.06); box-shadow: 0 0 20px rgba(88,166,255,0.08); }
+
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-all duration-200;
+    color: #484F58;
+  }
+  .btn-ghost:hover { color: #8B949E; background: rgba(255,255,255,0.04); }
+
+  /* ── Cards ───────────────────────────────────── */
+  .card-glass {
+    background: rgba(22,27,34,0.80);
+    border: 1px solid #21262D;
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .card-glass-hover {
+    background: rgba(22,27,34,0.80);
+    border: 1px solid #21262D;
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+    transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+  }
+  .card-glass-hover:hover {
+    border-color: rgba(88,166,255,0.25);
+    background: rgba(33,38,45,0.90);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(88,166,255,0.08);
+  }
+
+  .card-glow {
+    background: rgba(22,27,34,0.80);
+    border: 1px solid rgba(88,166,255,0.15);
+    border-radius: 16px;
+    box-shadow: 0 0 40px rgba(88,166,255,0.06), inset 0 1px 0 rgba(88,166,255,0.08);
+  }
+
+  /* ── Inputs ──────────────────────────────────── */
+  .input-field {
+    @apply w-full rounded-xl px-4 py-3 text-sm font-body outline-none transition-all duration-200;
+    background: rgba(13,17,23,0.80);
+    border: 1px solid #30363D;
+    color: #E6EDF3;
+  }
+  .input-field::placeholder { color: #484F58; }
+  .input-field:focus {
+    border-color: #58A6FF;
+    background: rgba(13,17,23,0.95);
+    box-shadow: 0 0 0 3px rgba(88,166,255,0.12), 0 0 20px rgba(88,166,255,0.06);
+  }
+  .input-field option { background: #161B22; color: #E6EDF3; }
+
+  .label-field {
+    @apply block text-sm font-medium mb-2;
+    color: #8B949E;
+    letter-spacing: 0.01em;
+  }
+
+  /* ── Tags ────────────────────────────────────── */
+  .section-tag {
+    @apply inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium font-mono;
+    background: rgba(88,166,255,0.08);
+    border: 1px solid rgba(88,166,255,0.20);
+    color: #58A6FF;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* ── Typography ──────────────────────────────── */
+  .gradient-text {
+    background: linear-gradient(135deg, #E6EDF3 0%, #8B949E 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .brand-gradient-text {
+    background: linear-gradient(135deg, #58A6FF 0%, #2DD4BF 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .shimmer-text {
+    background: linear-gradient(90deg, #8B949E 0%, #E6EDF3 30%, #58A6FF 50%, #E6EDF3 70%, #8B949E 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 3s linear infinite;
+  }
+
+  /* ── Decorative ──────────────────────────────── */
+  .brand-glow { box-shadow: 0 0 40px rgba(88,166,255,0.12), 0 0 80px rgba(88,166,255,0.04); }
+  .teal-glow  { box-shadow: 0 0 30px rgba(45,212,191,0.12); }
+
+  .noise-overlay {
+    position: relative;
+  }
+  .noise-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  /* ── Animation delays ────────────────────────── */
+  .animate-delay-75  { animation-delay: 75ms; }
+  .animate-delay-100 { animation-delay: 100ms; }
+  .animate-delay-150 { animation-delay: 150ms; }
+  .animate-delay-200 { animation-delay: 200ms; }
+  .animate-delay-300 { animation-delay: 300ms; }
+  .animate-delay-400 { animation-delay: 400ms; }
+  .animate-delay-500 { animation-delay: 500ms; }
+  .animate-delay-600 { animation-delay: 600ms; }
+  .animate-delay-700 { animation-delay: 700ms; }
+
+  /* ── Opacity for animated entrance ──────────── */
+  .opacity-0-start { opacity: 0; }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+
+  .bg-grid {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M0 0h40v40H0z' fill='none'/%3E%3Cpath d='M0 0v40M40 0v40M0 0h40M0 40h40' stroke='%2358A6FF06' stroke-width='1'/%3E%3C/svg%3E");
+  }
+}
+
+/* ── Extra animation utilities ───────────────────────────────── */
+.animate-pulse-brand {
+  animation: pulseBrand 2.5s ease-in-out infinite;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+/* ── CSS Custom Properties (theme tokens) ─────────────────────── */
+:root {
+  color-scheme: dark;
+  --bg-base:      #0D1117;
+  --bg-card:      rgba(22,27,34,0.8);
+  --bg-card-deep: rgba(13,17,23,0.6);
+  --bg-input:     rgba(13,17,23,0.8);
+  --border:       #21262D;
+  --border-input: #30363D;
+  --text-primary: #E6EDF3;
+  --text-muted:   #8B949E;
+  --text-faint:   #484F58;
+  --text-body:    #C9D1D9;
+}
+
+/* ── Print styles  ─────────────────────────────────────────────── */
+@media print {
+  body {
+    background: #ffffff !important;
+    background-image: none !important;
+    color: #1F2328 !important;
+  }
+  .card-glass, .card-glass-hover {
+    background: #ffffff !important;
+    border: 1px solid #D0D7DE !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+  .btn-primary, .btn-outline, .btn-ghost,
+  [class*="animate-"],
+  nav, footer,
+  .no-print { display: none !important; }
+  .print-break { page-break-before: always; }
+  h1, h2, h3 { color: #1F2328 !important; }
+  p, span, div { color: #24292F !important; }
+  .brand-gradient-text { color: #388BFD !important; -webkit-text-fill-color: #388BFD !important; }
+}
