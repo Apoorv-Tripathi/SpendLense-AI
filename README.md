@@ -1,20 +1,10 @@
-# SpendLens — AI Spend Audit SaaS
+# SpendLens — AI Spend Audit
 
 **Live deployment:** [https://spend-lense-ai-phi.vercel.app](https://spend-lense-ai-phi.vercel.app)
 
-SpendLens is a frontend prototype for helping engineering teams understand and review their spending on AI tools. It presents an audit experience alongside a landing page that explains the product, highlights its key benefits, and guides users toward getting started.
+SpendLens helps engineering teams review their spending on AI tools. The application provides a place to record tool usage and costs, then view a summary of the information entered. Audit form data is stored in the browser with `localStorage`, so it can persist between visits on the same device.
 
-Built for the Credex internship assignment, the project demonstrates a React application with reusable components, client-side form state, and a responsive interface. Form data is managed with React state and saved in the browser using `localStorage`, so it can persist between visits on the same device.
-
-## Features
-
-### Landing Page
-
-- **Hero section:** Introduces SpendLens with a prominent headline, animated floating AI tool badges, and trust indicators.
-- **Stats bar:** Displays key figures to give visitors a quick overview of the product’s reach or impact.
-- **How It Works:** Explains the product in three steps, using icon cards to make the process easy to scan.
-- **Testimonials:** Presents three testimonial cards with an avatar and role to add customer perspective.
-- **Call to action:** Encourages visitors to continue to the audit experience.
+The project includes a landing page and an audit page. The landing page explains the service and its workflow; the audit page contains the form interface and spending summary.
 
 ### Audit Experience
 
