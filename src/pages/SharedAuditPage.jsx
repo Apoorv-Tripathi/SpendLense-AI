@@ -246,7 +246,7 @@ export default function SharedAuditPage() {
                   <Zap size={14} className="fill-ink" />
                 </Link>
                 <p className="font-body text-xs text-white/20 mt-3">
-                  Free · No account required · Results in 14 minutes
+                  Free · No account required · Instant client-side analysis
                 </p>
               </div>
             </div>

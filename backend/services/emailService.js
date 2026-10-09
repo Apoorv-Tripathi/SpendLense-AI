@@ -223,7 +223,8 @@ export async function sendAuditConfirmationEmail({
     return { success: false, error: 'Email service not configured' }
   }
 
-  const auditUrl = `${process.env.FRONTEND_URL}/results/${auditPublicId}`
+  const frontendBase = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/+$/, '')
+  const auditUrl = `${frontendBase}/shared/${auditPublicId}`
 
   const templateData = { leadName, auditUrl, metrics, context, aiSummary }
 

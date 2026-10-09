@@ -31,7 +31,7 @@ export default function CTASection() {
             </h2>
 
             <p className="font-body text-base leading-relaxed max-w-lg mx-auto mb-10" style={{ color: '#8B949E' }}>
-              Your first AI spend audit is free, takes 14 minutes, and shows you exactly where your budget is going — and how to reclaim it.
+              Your AI spend audit is 100% free, takes under 2 minutes, and shows you exactly where your budget is going — and how to reclaim it.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">

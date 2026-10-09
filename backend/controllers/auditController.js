@@ -1,4 +1,6 @@
 import Audit from '../models/Audit.js'
+import { isDbConnected } from '../config/database.js'
+import { inMemoryStore } from '../models/inMemoryStore.js'
 import { generatePublicId } from '../utils/generatePublicId.js'
 import { generateAuditSummary } from '../services/geminiService.js'
 import * as res from '../utils/response.js'
@@ -8,12 +10,6 @@ import * as res from '../utils/response.js'
 export async function createAudit(req, resp) {
   try {
     const { context, tools, findings, metrics, verdict, currency } = req.body
-
-    // Debug log — remove after confirming working
-    console.log('[Audit] Received body keys:', Object.keys(req.body))
-    console.log('[Audit] context:', JSON.stringify(context))
-    console.log('[Audit] tools count:', tools?.length)
-    console.log('[Audit] metrics keys:', metrics ? Object.keys(metrics) : 'missing')
 
     if (!context || !metrics || !verdict) {
       return res.badRequest(resp, 'Missing required fields: context, metrics, verdict')
@@ -31,9 +27,10 @@ export async function createAudit(req, resp) {
       metrics,
       verdict,
     }
+
+    // Generate AI executive summary (Gemini -> Groq -> fallback)
     const summaryResult = await generateAuditSummary(auditDataForAI, currencyCode)
 
-    // Normalise tools — accept toolName or toolId
     const normalizedTools = toolsArray.map(t => ({
       ...t,
       toolId:       t.toolId   || t.toolName || '',
@@ -42,7 +39,7 @@ export async function createAudit(req, resp) {
       seats:        parseInt(t.seats)          || 1,
     }))
 
-    const audit = new Audit({
+    const auditPayload = {
       publicId,
       context: {
         teamSize:       parseInt(context.teamSize) || 1,
@@ -58,20 +55,36 @@ export async function createAudit(req, resp) {
         generatedAt: new Date(),
         model:       summaryResult.model,
         isFallback:  summaryResult.isFallback,
+        provider:    summaryResult.provider,
+        reason:      summaryResult.reason,
       },
-    })
+    }
 
-    await audit.save()
+    let publicAudit = null
 
-    console.log(`[Audit] Saved → publicId: ${publicId}, savings: ${currencyCode} ${metrics.potentialMonthlySavings}/mo`)
+    if (isDbConnected()) {
+      try {
+        const audit = new Audit(auditPayload)
+        await audit.save()
+        publicAudit = audit.toPublic()
+      } catch (dbErr) {
+        console.warn('[Audit] MongoDB save failed, falling back to in-memory store:', dbErr.message)
+        const memAudit = inMemoryStore.saveAudit(auditPayload)
+        publicAudit = memAudit.toPublic()
+      }
+    } else {
+      const memAudit = inMemoryStore.saveAudit(auditPayload)
+      publicAudit = memAudit.toPublic()
+    }
 
-    return res.created(resp, audit.toPublic())
+    console.log(`[Audit] Created → publicId: ${publicId}, model: ${summaryResult.model} (${summaryResult.provider || 'unknown'})`)
+
+    return res.created(resp, publicAudit)
 
   } catch (err) {
     console.error('[Audit] Save error:', err.message)
     if (err.name === 'ValidationError') {
       const details = Object.values(err.errors).map(e => e.message)
-      console.error('[Audit] Mongoose validation details:', details)
       return res.badRequest(resp, 'Audit validation failed', details)
     }
     return res.serverError(resp, err, 'createAudit')
@@ -86,10 +99,31 @@ export async function getAuditByPublicId(req, resp) {
     if (!publicId || publicId.length < 4) {
       return res.badRequest(resp, 'Invalid audit ID')
     }
-    const audit = await Audit.findByPublicId(publicId)
-    if (!audit) return res.notFound(resp, `No audit found with ID: ${publicId}`)
-    audit.incrementViews().catch(e => console.warn('[Audit] Failed to increment views:', e.message))
-    return res.ok(resp, audit.toPublic())
+
+    let audit = null
+
+    if (isDbConnected()) {
+      try {
+        audit = await Audit.findByPublicId(publicId)
+      } catch (err) {
+        console.warn('[Audit] DB lookup error:', err.message)
+      }
+    }
+
+    if (!audit) {
+      audit = inMemoryStore.findAuditByPublicId(publicId)
+    }
+
+    if (!audit) {
+      return res.notFound(resp, `No audit found with ID: ${publicId}`)
+    }
+
+    if (typeof audit.incrementViews === 'function') {
+      audit.incrementViews().catch(() => {})
+    }
+
+    return res.ok(resp, typeof audit.toPublic === 'function' ? audit.toPublic() : audit)
+
   } catch (err) {
     return res.serverError(resp, err, 'getAuditByPublicId')
   }
@@ -100,22 +134,54 @@ export async function getAuditByPublicId(req, resp) {
 export async function regenerateSummary(req, resp) {
   try {
     const { publicId } = req.params
-    const audit = await Audit.findByPublicId(publicId)
+
+    let audit = null
+    if (isDbConnected()) {
+      try {
+        audit = await Audit.findByPublicId(publicId)
+      } catch (err) {
+        console.warn('[Audit] DB lookup error:', err.message)
+      }
+    }
+    if (!audit) {
+      audit = inMemoryStore.findAuditByPublicId(publicId)
+    }
+
     if (!audit) return res.notFound(resp, 'Audit not found')
-    if (audit.aiSummary?.text && !audit.aiSummary?.isFallback) {
-      return res.ok(resp, { summary: audit.aiSummary })
-    }
+
     const auditData = {
-      context: audit.context, tools: audit.tools,
-      findings: audit.findings, metrics: audit.metrics, verdict: audit.verdict,
+      context: audit.context,
+      tools: audit.tools,
+      findings: audit.findings,
+      metrics: audit.metrics,
+      verdict: audit.verdict,
     }
+
     const summaryResult = await generateAuditSummary(auditData)
-    audit.aiSummary = {
-      text: summaryResult.text, generatedAt: new Date(),
-      model: summaryResult.model, isFallback: summaryResult.isFallback,
+
+    const updatedSummary = {
+      text:        summaryResult.text,
+      generatedAt: new Date(),
+      model:       summaryResult.model,
+      isFallback:  summaryResult.isFallback,
+      provider:    summaryResult.provider,
+      reason:      summaryResult.reason,
     }
-    await audit.save()
-    return res.ok(resp, { summary: audit.aiSummary })
+
+    audit.aiSummary = updatedSummary
+
+    if (isDbConnected() && typeof audit.save === 'function') {
+      try {
+        await audit.save()
+      } catch (saveErr) {
+        inMemoryStore.updateAudit(publicId, { aiSummary: updatedSummary })
+      }
+    } else {
+      inMemoryStore.updateAudit(publicId, { aiSummary: updatedSummary })
+    }
+
+    return res.ok(resp, { summary: updatedSummary })
+
   } catch (err) {
     return res.serverError(resp, err, 'regenerateSummary')
   }
@@ -125,13 +191,19 @@ export async function regenerateSummary(req, resp) {
 
 export async function generateSummaryOnly(req, resp) {
   try {
-    const { context, findings, metrics, verdict, currency } = req.body
+    const { context, tools, findings, metrics, verdict, currency } = req.body
     if (!context || !metrics || !verdict) {
-      return res.badRequest(resp, 'Missing required fields')
+      return res.badRequest(resp, 'Missing required fields: context, metrics, verdict')
     }
+
     const summaryResult = await generateAuditSummary({
-      context, tools: [], findings: findings ?? [], metrics, verdict,
+      context,
+      tools: tools ?? [],
+      findings: findings ?? [],
+      metrics,
+      verdict,
     }, currency || 'USD')
+
     return res.ok(resp, summaryResult)
   } catch (err) {
     return res.serverError(resp, err, 'generateSummaryOnly')

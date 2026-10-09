@@ -87,29 +87,35 @@ export const HOW_IT_WORKS_STEPS = [
 ]
 
 export const STATS = [
-  { value: '$340K+', label: 'Average annual AI waste found per team' },
-  { value: '3.2×', label: 'Average tool consolidation ratio' },
-  { value: '14 min', label: 'Time to complete your first audit' },
-  { value: '94%', label: 'Teams find at least one redundant tool' },
+  { value: '8', label: 'Major AI platforms evaluated with tier pricing' },
+  { value: '12', label: 'Deterministic audit rules & redundancy checks' },
+  { value: '< 2 min', label: 'To enter tooling and generate your report' },
+  { value: '100%', label: 'Client-side private evaluation by default' },
 ]
 
-export const TESTIMONIALS = [
+export const AUDIT_CAPABILITIES = [
   {
-    quote: "We were paying for 6 different AI tools with overlapping capabilities. SpendLens found $8,400/month in waste in under 20 minutes.",
-    name: "Priya Sharma",
-    role: "CTO, FinScale",
-    avatar: "PS",
+    category: 'Redundancy Elimination',
+    title: 'Duplicate Assistants',
+    description: 'Detects overlapping tools across engineers and knowledge workers — like paying simultaneously for Cursor and GitHub Copilot, or multiple team chat subscriptions.',
+    badge: 'Cross-Tool Rule',
+    tag: 'Redundancy',
   },
   {
-    quote: "Finally a tool that talks to engineers, not just procurement. The per-seat breakdown was exactly what I needed to justify consolidating to one platform.",
-    name: "Marcus Chen",
-    role: "Eng Lead, Luma Labs",
-    avatar: "MC",
+    category: 'Seat Optimization',
+    title: 'Excess & Idle Seats',
+    description: 'Flags subscription seat counts that exceed active team size and identifies per-seat premiums above published list prices.',
+    badge: 'Seat Efficiency',
+    tag: 'Rightsizing',
   },
   {
-    quote: "Our AI bill went from opaque to crystal clear. Negotiated 40% off our enterprise contract with the data SpendLens surfaced.",
-    name: "Ananya Rao",
-    role: "Head of Ops, Credex",
-    avatar: "AR",
+    category: 'Plan Right-Sizing',
+    title: 'Enterprise Tier Overkill',
+    description: 'Surfaces small teams paying expensive enterprise minimums where standard Pro or Team tiers deliver identical daily capabilities.',
+    badge: 'Contract Audit',
+    tag: 'Tier Fit',
   },
 ]
+
+// Backward-compatibility alias
+export const TESTIMONIALS = AUDIT_CAPABILITIES

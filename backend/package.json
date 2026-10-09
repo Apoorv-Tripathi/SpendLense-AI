@@ -2,14 +2,16 @@
   "name": "ai-spend-audit-backend",
   "version": "1.0.0",
   "description": "Backend API for SpendLens AI Spend Audit SaaS",
-  "main": "src/server.js",
+  "main": "server.js",
   "type": "module",
   "scripts": {
-    "dev": "node --watch src/server.js",
-    "start": "node src/server.js",
-    "lint": "eslint src/**/*.js"
+    "dev": "node --watch server.js",
+    "start": "node server.js",
+    "lint": "eslint **/*.js"
   },
   "dependencies": {
+    "@google/genai": "^2.28.0",
+    "@google/generative-ai": "^0.24.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",

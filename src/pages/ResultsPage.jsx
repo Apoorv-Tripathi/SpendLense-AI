@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, RotateCcw, Zap, Sparkles, Download, ChevronDown } from 'lucide-react'
+import { ArrowLeft, RotateCcw, Zap, Sparkles, Download, ChevronDown, RefreshCw } from 'lucide-react'
 import { exportToPDF } from '../utils/pdfExport.js'
 import { useCurrency } from '../context/CurrencyContext'
 import { useThemeStyles } from '../hooks/useThemeStyles'
@@ -14,7 +14,7 @@ import AnalyticsPanel      from '../components/results/AnalyticsPanel'
 import ResultsCTA          from '../components/results/ResultsCTA'
 import AuditLoading        from '../components/results/AuditLoading'
 
-export default function ResultsPage({ report, loading, onReset, publicId }) {
+export default function ResultsPage({ report, loading, isAiLoading, onRegenerateAi, onReset, publicId }) {
   useEffect(() => { window.scrollTo({ top: 0 }) }, [])
 
   const t = useThemeStyles()
@@ -86,8 +86,15 @@ export default function ResultsPage({ report, loading, onReset, publicId }) {
             <AnalyticsPanel metrics={metrics} context={context} findings={findings} tools={activeTools} />
 
             {/* AI Summary card */}
-            {report.aiSummary?.text && (
-              <AISummaryCard summary={report.aiSummary} metrics={metrics} context={context} t={t} />
+            {(report.aiSummary?.text || isAiLoading) && (
+              <AISummaryCard
+                summary={report.aiSummary}
+                metrics={metrics}
+                context={context}
+                t={t}
+                isAiLoading={isAiLoading}
+                onRegenerate={onRegenerateAi}
+              />
             )}
 
             {globalFindings.length > 0 && (
@@ -161,17 +168,15 @@ export default function ResultsPage({ report, loading, onReset, publicId }) {
         </div>
       </div>
 
-      <ResultsCTA metrics={metrics} onReset={onReset} publicId={publicId} />
+      <ResultsCTA metrics={metrics} onReset={onReset} publicId={publicId} report={report} />
     </div>
   )
 }
 
 // ─── AI Summary Card ──────────────────────────────────────────────────────────
 
-function AISummaryCard({ summary, metrics, context, t }) {
+function AISummaryCard({ summary, metrics, context, t, isAiLoading, onRegenerate }) {
   const [expanded, setExpanded] = useState(false)
-  const words   = summary.text.split(' ')
-  const preview = words.slice(0, 28).join(' ') + (words.length > 28 ? '…' : '')
 
   const mood = metrics.wasteScore >= 80 ? 'excellent'
     : metrics.wasteScore >= 55 ? 'good'
@@ -184,12 +189,25 @@ function AISummaryCard({ summary, metrics, context, t }) {
     ? `linear-gradient(135deg, ${accentColor}08 0%, ${accentColor}03 100%)`
     : `linear-gradient(135deg, ${accentColor}06 0%, rgba(255,255,255,0.95) 100%)`
 
+  const providerLabel = summary?.provider === 'gemini'
+    ? 'Google Gemini'
+    : summary?.provider === 'groq'
+    ? 'Groq LLaMA'
+    : summary?.isFallback
+    ? 'Deterministic Heuristic Engine'
+    : (summary?.model || 'SpendLens AI')
+
+  const isLiveLLM = !summary?.isFallback && (summary?.provider === 'gemini' || summary?.provider === 'groq')
+
+  const words = summary?.text ? summary.text.split(' ') : []
+  const preview = words.length > 28 ? words.slice(0, 28).join(' ') + '…' : summary?.text || ''
+
   return (
     <div className="rounded-2xl overflow-hidden transition-all duration-300"
-      style={{ background: bgGradient, border: `1px solid ${accentColor}22` }}>
+      style={{ background: bgGradient, border: `1px solid ${accentColor}25` }}>
 
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-3.5"
+      <div className="flex items-center justify-between px-5 py-3.5 flex-wrap gap-2"
         style={{ borderBottom: `1px solid ${accentColor}15`, background: `${accentColor}06` }}>
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -198,61 +216,112 @@ function AISummaryCard({ summary, metrics, context, t }) {
           </div>
           <div>
             <span className="font-mono text-xs font-bold uppercase tracking-widest" style={{ color: accentColor }}>
-              AI Analysis
+              Executive AI Summary
             </span>
-            <span className="font-mono text-xs ml-2" style={{ color: t.textFaint }}>· powered by Groq</span>
+            <span className="font-mono text-xs ml-2" style={{ color: t.textFaint }}>
+              · {providerLabel}
+            </span>
           </div>
         </div>
-        <button onClick={() => setExpanded(e => !e)}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-body transition-all"
-          style={{
-            background: expanded ? `${accentColor}12` : 'transparent',
-            border: `1px solid ${expanded ? accentColor + '30' : 'transparent'}`,
-            color: t.textMuted,
-          }}>
-          {expanded ? 'Show less' : 'Read more'}
-          <ChevronDown size={12} style={{ transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }} />
-        </button>
+
+        <div className="flex items-center gap-2">
+          {onRegenerate && (
+            <button
+              type="button"
+              onClick={onRegenerate}
+              disabled={isAiLoading}
+              title="Regenerate executive summary"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-body transition-all disabled:opacity-50 hover:bg-white/5"
+              style={{
+                border: `1px solid ${accentColor}30`,
+                color: t.textMuted,
+              }}>
+              <RefreshCw size={11} className={isAiLoading ? 'animate-spin' : ''} />
+              <span>{isAiLoading ? 'Analyzing…' : 'Regenerate'}</span>
+            </button>
+          )}
+
+          {summary?.text && (
+            <button onClick={() => setExpanded(e => !e)}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-body transition-all"
+              style={{
+                background: expanded ? `${accentColor}12` : 'transparent',
+                border: `1px solid ${expanded ? accentColor + '30' : 'transparent'}`,
+                color: t.textMuted,
+              }}>
+              {expanded ? 'Show less' : 'Read more'}
+              <ChevronDown size={12} style={{ transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Body */}
       <div className="px-5 py-4">
-        <div className="font-display text-5xl select-none mb-1"
-          style={{ color: `${accentColor}15`, lineHeight: 1 }}>"</div>
+        {isAiLoading && !summary?.text ? (
+          <div className="py-6 space-y-3">
+            <div className="flex items-center gap-2">
+              <RefreshCw size={14} className="animate-spin" style={{ color: accentColor }} />
+              <span className="font-mono text-xs font-medium" style={{ color: accentColor }}>
+                Synthesizing audit findings with AI…
+              </span>
+            </div>
+            <div className="space-y-2 pt-2 animate-pulse">
+              <div className="h-3 rounded" style={{ background: `${accentColor}15`, width: '90%' }} />
+              <div className="h-3 rounded" style={{ background: `${accentColor}10`, width: '100%' }} />
+              <div className="h-3 rounded" style={{ background: `${accentColor}10`, width: '80%' }} />
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="font-display text-5xl select-none mb-1"
+              style={{ color: `${accentColor}15`, lineHeight: 1 }}>"</div>
 
-        <p className="font-body text-sm leading-relaxed"
-          style={{ color: t.textBody, lineHeight: '1.8' }}>
-          {expanded ? summary.text : preview}
-        </p>
+            <p className="font-body text-sm leading-relaxed"
+              style={{ color: t.textBody, lineHeight: '1.8' }}>
+              {expanded ? summary.text : preview}
+            </p>
 
-        {!expanded && (
-          <div className="flex flex-wrap gap-2 mt-4">
-            {[
-              { label: 'Monthly savings', value: `$${metrics.potentialMonthlySavings.toFixed(0)}` },
-              { label: 'Waste score',     value: `${metrics.wasteScore}/100` },
-              { label: 'Findings',        value: `${metrics.totalFindings}` },
-            ].map(({ label, value }) => (
-              <div key={label} className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg"
-                style={{ background: `${accentColor}08`, border: `1px solid ${accentColor}18` }}>
-                <span className="font-mono text-xs font-semibold" style={{ color: accentColor }}>{value}</span>
-                <span className="font-body text-xs" style={{ color: t.textFaint }}>{label}</span>
+            {summary?.isFallback && (
+              <div className="mt-3.5 px-3 py-2 rounded-xl text-xs flex items-start gap-2"
+                style={{ background: 'rgba(210,153,34,0.08)', border: '1px solid rgba(210,153,34,0.20)', color: '#D29922' }}>
+                <span className="font-mono">ℹ</span>
+                <span>
+                  Deterministic heuristic synthesis based on your audit rules. To enable live LLM generation, set <code className="px-1 py-0.5 rounded bg-black/40 font-mono text-[11px]">GEMINI_API_KEY</code> or <code className="px-1 py-0.5 rounded bg-black/40 font-mono text-[11px]">GROQ_API_KEY</code> in <code className="px-1 py-0.5 rounded bg-black/40 font-mono text-[11px]">backend/.env</code>.
+                </span>
               </div>
-            ))}
-          </div>
-        )}
+            )}
 
-        <div className="flex items-center justify-between mt-4 pt-3"
-          style={{ borderTop: `1px solid ${accentColor}12` }}>
-          <div className="flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: accentColor }} />
-            <span className="font-mono text-xs" style={{ color: t.textFaint }}>
-              {summary.isFallback
-                ? 'Auto-generated summary'
-                : `${summary.model || 'Groq AI'} · ${summary.text.split(' ').length} words`}
-            </span>
-          </div>
-          <span className="font-mono text-xs" style={{ color: `${accentColor}50` }}>SpendLens AI ✦</span>
-        </div>
+            {!expanded && (
+              <div className="flex flex-wrap gap-2 mt-4">
+                {[
+                  { label: 'Monthly savings', value: `$${metrics.potentialMonthlySavings.toFixed(0)}` },
+                  { label: 'Waste score',     value: `${metrics.wasteScore}/100` },
+                  { label: 'Findings',        value: `${metrics.totalFindings}` },
+                ].map(({ label, value }) => (
+                  <div key={label} className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg"
+                    style={{ background: `${accentColor}08`, border: `1px solid ${accentColor}18` }}>
+                    <span className="font-mono text-xs font-semibold" style={{ color: accentColor }}>{value}</span>
+                    <span className="font-body text-xs" style={{ color: t.textFaint }}>{label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex items-center justify-between mt-4 pt-3"
+              style={{ borderTop: `1px solid ${accentColor}12` }}>
+              <div className="flex items-center gap-1.5">
+                <div className={`w-1.5 h-1.5 rounded-full ${isAiLoading ? 'animate-ping' : 'animate-pulse'}`} style={{ background: accentColor }} />
+                <span className="font-mono text-xs" style={{ color: t.textFaint }}>
+                  {isLiveLLM
+                    ? `${providerLabel} (${summary.model || 'live'}) · ${words.length} words`
+                    : 'Deterministic audit synthesis'}
+                </span>
+              </div>
+              <span className="font-mono text-xs" style={{ color: `${accentColor}60` }}>SpendLens AI ✦</span>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

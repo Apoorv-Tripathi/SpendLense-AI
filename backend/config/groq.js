@@ -12,14 +12,18 @@ export function getGroqClient() {
   const apiKey = process.env.GROQ_API_KEY
 
   if (!apiKey || apiKey === 'your_groq_api_key_here') {
-    console.warn('[Groq] API key not configured. AI summaries will use fallback text.')
     return null
   }
 
-  client = new Groq({ apiKey })
-  console.log('[Groq] Client initialised.')
-  return client
+  try {
+    client = new Groq({ apiKey })
+    console.log('[Groq] Client initialised.')
+    return client
+  } catch (err) {
+    console.warn('[Groq] Failed to initialise client:', err.message)
+    return null
+  }
 }
 
-export const GROQ_MODEL      = 'llama-3.1-8b-instant'
+export const GROQ_MODEL      = process.env.GROQ_MODEL || 'llama-3.1-8b-instant'
 export const GROQ_TIMEOUT_MS = 10_000

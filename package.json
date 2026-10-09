@@ -24,6 +24,7 @@
   },
   "scripts": {
     "dev": "vite",
+    "server": "npm --prefix backend run dev",
     "build": "vite build",
     "preview": "vite preview",
     "test": "node --experimental-vm-modules node_modules/.bin/jest",

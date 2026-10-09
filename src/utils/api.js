@@ -6,12 +6,14 @@ async function request(path, options = {}) {
     ...options,
   })
   const json = await res.json()
-  if (!res.ok) throw new Error(json.error?.message || 'Request failed')
+  if (!res.ok) throw new Error(json.error?.message || json.message || 'Request failed')
   return json.data
 }
 
 export const api = {
-  saveAudit: (auditReport)  => request('/audits', { method: 'POST', body: JSON.stringify(auditReport) }),
-  getAudit:  (publicId)     => request(`/audits/${publicId}`),
-  saveLead:  (leadData)     => request('/leads',  { method: 'POST', body: JSON.stringify(leadData) }),
+  saveAudit:           (auditReport) => request('/audits', { method: 'POST', body: JSON.stringify(auditReport) }),
+  getAudit:            (publicId)    => request(`/audits/${publicId}`),
+  saveLead:            (leadData)    => request('/leads',  { method: 'POST', body: JSON.stringify(leadData) }),
+  regenerateSummary:   (publicId)    => request(`/audits/${publicId}/regenerate-summary`, { method: 'POST' }),
+  generateSummaryOnly: (auditData)   => request('/audits/summary', { method: 'POST', body: JSON.stringify(auditData) }),
 }

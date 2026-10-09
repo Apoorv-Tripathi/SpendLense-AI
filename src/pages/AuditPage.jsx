@@ -26,7 +26,7 @@ export default function AuditPage({ onGenerateReport, reportLoading }) {
     e.preventDefault()
     if (!isValid || reportLoading) return
     onGenerateReport(formState)
-    setTimeout(() => { resetForm(); navigate('/results') }, 700)
+    navigate('/results')
   }
 
   return (

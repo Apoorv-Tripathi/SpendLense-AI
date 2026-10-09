@@ -117,7 +117,7 @@ export default function HowItWorksSection() {
             Run Your Audit Now <ArrowRight size={16} />
           </Link>
           <p className="mt-4 font-mono text-xs" style={{ color: '#484F58' }}>
-            Free · No account · Results in 14 minutes
+            Free · No account required · Instant in-browser analysis
           </p>
         </div>
       </div>

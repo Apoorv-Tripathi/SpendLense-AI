@@ -93,4 +93,10 @@ async function start() {
   })
 }
 
-start()
+// ─── Export & Start ────────────────────────────────────────────────────────────
+export { app, start }
+export default app
+
+if (process.env.NODE_ENV !== 'test') {
+  start()
+}

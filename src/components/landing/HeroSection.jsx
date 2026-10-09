@@ -11,42 +11,22 @@ const tools = [
 
 const trustItems = [
   { icon: ShieldCheck, label: 'No account required' },
-  { icon: TrendingDown, label: 'Instant insights' },
-  { icon: Clock, label: '14 min audit' },
+  { icon: TrendingDown, label: 'Instant results' },
+  { icon: Clock, label: 'Under 2 min audit' },
 ]
 
-// Animated counter hook
-function useCounter(target, duration = 1800) {
-  const [count, setCount] = useState(0)
-  useEffect(() => {
-    let start = 0
-    const step = target / (duration / 16)
-    const timer = setInterval(() => {
-      start += step
-      if (start >= target) { setCount(target); clearInterval(timer) }
-      else setCount(Math.floor(start))
-    }, 16)
-    return () => clearInterval(timer)
-  }, [target, duration])
-  return count
-}
-
 function LiveCounter() {
-  const waste = useCounter(340000)
-  const teams = useCounter(94)
-  const mins  = useCounter(14)
-
   return (
     <div className="hidden lg:flex absolute right-8 top-1/2 -translate-y-1/2 flex-col gap-3 z-10">
       {[
-        { value: `$${(waste/1000).toFixed(0)}K`, label: 'avg annual waste', color: '#F85149' },
-        { value: `${teams}%`, label: 'find redundancy', color: '#2DD4BF' },
-        { value: `${mins} min`, label: 'to first insight', color: '#58A6FF' },
+        { value: '8 Tools', label: 'analyzed side-by-side', color: '#58A6FF' },
+        { value: '12 Rules', label: 'redundancy & seat checks', color: '#2DD4BF' },
+        { value: '< 2 min', label: 'start to full audit', color: '#8B72EF' },
       ].map(({ value, label, color }) => (
         <div key={label} className="px-4 py-3 rounded-xl text-right"
           style={{ background: 'rgba(22,27,34,0.85)', border: `1px solid ${color}20`, backdropFilter: 'blur(12px)' }}>
           <div className="font-display font-extrabold text-xl" style={{ color }}>{value}</div>
-          <div className="font-mono text-xs" style={{ color: '#484F58' }}>{label}</div>
+          <div className="font-mono text-xs" style={{ color: '#8B949E' }}>{label}</div>
         </div>
       ))}
     </div>
@@ -139,9 +119,7 @@ export default function HeroSection() {
 
         <p className="mt-7 text-base sm:text-lg leading-relaxed animate-fade-up animate-delay-200 max-w-xl mx-auto"
           style={{ color: '#8B949E' }}>
-          Teams waste an average of{' '}
-          <span className="font-semibold" style={{ color: '#E6EDF3' }}>$340,000/year</span>{' '}
-          on redundant AI subscriptions. SpendLens audits your entire stack and finds savings in under 15 minutes — completely free.
+          Teams frequently accumulate duplicate AI assistants, unassigned seats, and tier mismatches across departments. SpendLens audits your entire tooling stack in under 2 minutes — completely free and private.
         </p>
 
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-up animate-delay-300">

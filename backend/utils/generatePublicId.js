@@ -1,11 +1,13 @@
 import { nanoid } from 'nanoid'
 import Audit from '../models/Audit.js'
+import { isDbConnected } from '../config/database.js'
+import { inMemoryStore } from '../models/inMemoryStore.js'
 
-const ID_LENGTH = 8 // e.g. "xK3mN9pQ" — short but collision-resistant enough
+const ID_LENGTH = 8
 
 /**
- * Generate a unique public audit ID.
- * Checks the DB to guarantee no collision (extremely rare but safe).
+ * Generate a unique public audit ID with collision avoidance.
+ * Checks MongoDB when connected, or the in-memory store otherwise.
  *
  * @returns {Promise<string>}
  */
@@ -14,10 +16,19 @@ export async function generatePublicId() {
 
   for (let i = 0; i < MAX_ATTEMPTS; i++) {
     const id = nanoid(ID_LENGTH)
-    const existing = await Audit.findOne({ publicId: id })
-    if (!existing) return id
+
+    if (isDbConnected()) {
+      try {
+        const existing = await Audit.findOne({ publicId: id })
+        if (!existing) return id
+      } catch {
+        // Fall back to memory check if DB query errors
+        if (!inMemoryStore.findAuditByPublicId(id)) return id
+      }
+    } else {
+      if (!inMemoryStore.findAuditByPublicId(id)) return id
+    }
   }
 
-  // Fallback: longer ID is statistically unique
   return nanoid(ID_LENGTH + 4)
 }

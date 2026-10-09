@@ -1,9 +1,10 @@
 import { ArrowRight, Download, RotateCcw, TrendingDown, Zap } from 'lucide-react'
 import { useCurrency } from '../../context/CurrencyContext'
+import { exportToPDF } from '../../utils/pdfExport.js'
 import LeadCaptureForm from './LeadCaptureForm'
 
-export default function ResultsCTA({ metrics, onReset, publicId }) {
-  const { format } = useCurrency()
+export default function ResultsCTA({ metrics, onReset, publicId, report }) {
+  const { format, currency } = useCurrency()
   const formatCurrency = format
   const isHighSavings = metrics.potentialMonthlySavings >= 500
   const isLowSavings  = metrics.potentialMonthlySavings < 50 && metrics.totalMonthlySpend > 0
@@ -74,7 +75,7 @@ export default function ResultsCTA({ metrics, onReset, publicId }) {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <button onClick={() => window.print()} className="btn-primary text-sm px-8 py-4 w-full sm:w-auto justify-center">
+              <button onClick={() => report ? exportToPDF(report, currency) : window.print()} className="btn-primary text-sm px-8 py-4 w-full sm:w-auto justify-center">
                 <Download size={15} /> Export Report
               </button>
               <button onClick={onReset} className="btn-outline text-sm px-8 py-4 w-full sm:w-auto justify-center">

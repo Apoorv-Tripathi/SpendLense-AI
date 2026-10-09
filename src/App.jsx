@@ -17,20 +17,21 @@ const ComparisonPage   = lazy(() => import('./pages/ComparisonPage'))
 const BenchmarksPage   = lazy(() => import('./pages/BenchmarksPage'))
 
 function AppRoutes() {
-  const { report, loading, generate, clearReport, publicId } = useAuditReport()
+  const { report, loading, isAiLoading, generate, regenerateAi, clearReport, publicId } = useAuditReport()
 
   return (
     <Suspense fallback={<AuditLoading />}>
       <Routes>
         <Route element={<Layout />}>
-          <Route path="/"            element={<LandingPage />} />
-          <Route path="/audit"       element={<AuditPage onGenerateReport={generate} reportLoading={loading} />} />
-          <Route path="/results"     element={<ResultsPage report={report} loading={loading} onReset={clearReport} publicId={publicId} />} />
+          <Route path="/"                 element={<LandingPage />} />
+          <Route path="/audit"            element={<AuditPage onGenerateReport={generate} reportLoading={loading} />} />
+          <Route path="/results"          element={<ResultsPage report={report} loading={loading} isAiLoading={isAiLoading} onRegenerateAi={regenerateAi} onReset={clearReport} publicId={publicId} />} />
+          <Route path="/results/:publicId" element={<SharedAuditPage />} />
           <Route path="/shared/:publicId" element={<SharedAuditPage />} />
-          <Route path="/calculator"  element={<ROICalculatorPage />} />
-          <Route path="/compare"     element={<ComparisonPage />} />
-          <Route path="/benchmarks"  element={<BenchmarksPage />} />
-          <Route path="*"            element={<NotFound />} />
+          <Route path="/calculator"       element={<ROICalculatorPage />} />
+          <Route path="/compare"          element={<ComparisonPage />} />
+          <Route path="/benchmarks"       element={<BenchmarksPage />} />
+          <Route path="*"                 element={<NotFound />} />
         </Route>
       </Routes>
     </Suspense>
